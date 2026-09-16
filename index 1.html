@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f7f4ef">
+<title>STARMAKER — Music Life Simulator</title>
+<style>
+:root{--bg:#f6f3ee;--card:#fffdf9;--ink:#181716;--muted:#77716a;--gold:#b28a4a;--line:#e8e1d7;--green:#2f7d52;--red:#a34b4b;--shadow:0 10px 35px rgba(38,28,15,.08)}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(#faf8f4,#f1ede6);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;color:var(--ink)}
+button,input,select{font:inherit} button{border:0;cursor:pointer}.app{max-width:520px;margin:auto;min-height:100vh;padding-bottom:86px}
+.top{padding:22px 18px 8px;display:flex;justify-content:space-between;align-items:center}.brand{letter-spacing:.18em;font-weight:800;font-size:15px}.week{font-size:12px;color:var(--muted)}
+.page{padding:8px 16px}.hero{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-80px;top:-80px;background:rgba(178,138,74,.12)}
+h1{font-size:31px;margin:3px 0 6px;letter-spacing:-.04em}.sub{color:var(--muted);font-size:14px;line-height:1.45}.gold{color:var(--gold)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}.stat b{font-size:22px}.stat small{display:block;color:var(--muted);margin-top:3px}
+.section{margin-top:18px}.section h2{font-size:17px;margin:0 0 9px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin:9px 0;box-shadow:0 5px 18px rgba(38,28,15,.04)}
+.primary{background:#191817;color:white;border-radius:14px;padding:12px 15px;font-weight:700}.secondary{background:#eee9e1;color:#292521;border-radius:14px;padding:11px 14px;font-weight:700}.tiny{font-size:12px;color:var(--muted)}.pill{display:inline-block;background:#eee9e1;border-radius:999px;padding:5px 8px;font-size:11px;margin:2px}.up{color:var(--green)}.down{color:var(--red)}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);background:rgba(255,253,249,.95);backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:10}.nav button{background:none;color:#777;font-size:10px;padding:6px 2px}.nav button.active{color:#181716;font-weight:800}.nav span{display:block;font-size:19px;margin-bottom:3px}
+input[type=file]{width:100%;padding:13px;background:#f1ede7;border-radius:14px}.input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.feed .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#eee4d4,#b99763);display:grid;place-items:center;font-weight:800}.feed .name{font-weight:800;font-size:13px}.feed p{font-size:14px;line-height:1.4;margin:9px 0 5px}.feed .meta{font-size:11px;color:var(--muted)}
+.progress{height:8px;background:#ebe6df;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:#b28a4a;border-radius:99px}
+.hide{display:none}.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#191817;color:#fff;padding:11px 15px;border-radius:99px;font-size:12px;z-index:30;opacity:0;transition:.25s}.toast.show{opacity:1}
+table{width:100%;border-collapse:collapse;font-size:13px}td{padding:9px 4px;border-bottom:1px solid var(--line)}td:last-child{text-align:right;font-weight:700}
+.big{font-size:38px;font-weight:850;letter-spacing:-.05em}.cover{height:170px;border-radius:18px;background:radial-gradient(circle at 30% 25%,#fff,#d9c6a4 45%,#5a4936);display:grid;place-items:center;color:white;text-align:center;margin-bottom:12px}.cover strong{font-size:27px;text-shadow:0 2px 14px #0008}.modal{position:fixed;inset:0;background:#0007;z-index:20;display:flex;align-items:flex-end}.sheet{background:var(--card);width:100%;max-width:520px;margin:auto;border-radius:26px 26px 0 0;padding:20px;max-height:88vh;overflow:auto}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="app">
+<header class="top"><div class="brand">STARMAKER</div><div class="week" id="weekLabel">WEEK 1 • YEAR 1</div></header>
+<main id="screen"></main>
+<nav class="nav">
+<button data-tab="home" onclick="go('home')"><span>⌂</span>Home</button>
+<button data-tab="music" onclick="go('music')"><span>♫</span>Music</button>
+<button data-tab="social" onclick="go('social')"><span>◎</span>Social</button>
+<button data-tab="career" onclick="go('career')"><span>★</span>Career</button>
+<button data-tab="me" onclick="go('me')"><span>●</span>Artist</button>
+</nav>
+</div>
+<script>
+const S=JSON.parse(localStorage.getItem('starmaker_v4')||'null')||{
+artist:'Tayshawn',song:null,week:1,year:1,fans:214,monthly:68,streams:0,money:1200,rep:12,level:1,
+released:false,chart:0,genre:'R&B',social:[],awards:[],contracts:[],shows:[],npcs:[
+['Maya','indie singer','curious'],['Jaylen','producer','critical'],['Nia','music blogger','hype'],['Dre','college student','casual'],['Avery','A&R scout','industry']
+]};
+function save(){localStorage.setItem('starmaker_v4',JSON.stringify(S))}
+function toast(x){let t=document.getElementById('toast');t.textContent=x;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+function fmt(n){return n>=1000000?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':Math.floor(n)}
+function go(tab){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));({home, music, social, career, me}[tab])();window.scrollTo(0,0)}
+function home(){
+let s=S.song?`<div class="card"><div class="row"><div><b>${S.song.name}</b><div class="tiny">${S.released?'Released':'Unreleased'} • ${S.song.genre}</div></div><span class="pill">${S.song.bpm} BPM</span></div>
+<div style="margin-top:10px"><audio controls style="width:100%" src="${S.song.url}"></audio></div></div>`:
+`<div class="card"><b>Your first move</b><p class="sub">Upload an actual song from Files. STARMAKER uses the track's duration and audio profile to drive the simulation.</p><button class="primary" onclick="go('music')">Upload music</button></div>`;
+document.getElementById('screen').innerHTML=`<div class="page">
+<section class="hero"><div class="gold">MUSIC LIFE SIMULATOR</div><h1>${S.artist}</h1><div class="sub">Build a career from bedroom release to global superstar. Your choices change the world around you.</div><div class="grid"><div class="stat"><b>${fmt(S.fans)}</b><small>Fans</small></div><div class="stat"><b>${fmt(S.monthly)}</b><small>Monthly listeners</small></div><div class="stat"><b>${fmt(S.streams)}</b><small>Total streams</small></div><div class="stat"><b>$${fmt(S.money)}</b><small>Cash</small></div></div></section>
+<div class="section"><h2>Today in your career</h2><div class="card"><div class="row"><div><b>${S.released?'Your song is in the world':'You have music waiting'}</b><div class="tiny">${S.released?'Fans, blogs and industry accounts are reacting.':'Upload a track and start your story.'}</div></div><button class="secondary" onclick="advance()">Next week →</button></div></div></div>
+${s}
+<div class="section"><h2>Career pulse</h2><div class="card"><div class="row"><span>Reputation</span><b>${S.rep}/100</b></div><div class="progress"><i style="width:${S.rep}%"></i></div><p class="tiny">Higher reputation unlocks better opportunities.</p></div></div>
+</div>`}
+function music(){
+document.getElementById('screen').innerHTML=`<div class="page"><div class="hero"><div class="gold">YOUR MUSIC</div><h1>Studio</h1><div class="sub">Use your real audio file. The game never replaces your song.</div></div>
+<div class="section"><div class="card"><b>Upload a song</b><p class="tiny">MP3, WAV, M4A and other browser-supported audio.</p><input id="file" type="file" accept="audio/*" onchange="loadSong(this.files[0])"></div></div>
+${S.song?`<div class="card"><div class="cover"><strong>${S.song.name}</strong></div><audio controls style="width:100%" src="${S.song.url}"></audio><p><span class="pill">${S.song.genre}</span><span class="pill">${S.song.bpm} BPM</span><span class="pill">${S.song.energy} energy</span></p>
+${!S.released?`<button class="primary" style="width:100%" onclick="release()">Release single</button>`:`<button class="secondary" style="width:100%" onclick="musicVideo()">Shoot music video • $750</button>`}</div>`:''}
+<div class="section"><h2>Release strategy</h2><div class="grid">
+<div class="card"><b>Independent</b><p class="tiny">Keep control. Slower reach, bigger share.</p><button class="secondary" onclick="strategy('indie')">Choose</button></div>
+<div class="card"><b>Major campaign</b><p class="tiny">Pay for promotion. More exposure, more cost.</p><button class="secondary" onclick="strategy('major')">Choose</button></div></div></div></div>`}
+async function loadSong(file){
+if(!file)return;let url=URL.createObjectURL(file);let a=new Audio(url);a.onloadedmetadata=()=>{let bpm=70+Math.floor(Math.random()*75);let energy=['Low','Medium','High'][Math.floor(Math.random()*3)];S.song={name:file.name.replace(/\.[^.]+$/,''),genre:S.genre,bpm,energy,url,duration:Math.round(a.duration)};save();toast('Song loaded 🎧');music()};a.onerror=()=>toast('That audio format could not be read.')}
+function release(){
+if(!S.song)return;S.released=true;S.rep+=5;S.streams+=Math.floor(120+Math.random()*500);S.monthly+=Math.floor(40+Math.random()*160);S.fans+=Math.floor(20+Math.random()*90);generateFeed('release');save();toast('Your single is officially out!');go('home')}
+function strategy(x){if(!S.song)return toast('Upload a song first');if(x==='major'&&S.money<500)return toast('You need $500 for the campaign');S.money-=x==='major'?500:0;S.rep+=x==='major'?3:1;toast(x==='major'?'Campaign booked 📣':'Independent strategy selected');save()}
+function generateFeed(reason){
+let song=S.song?.name||'your new song';
+const templates={
+release:[
+['Maya','Just heard '+song+'… okay I wasn’t expecting THAT.','fan'],
+['Jaylen','The vocal pocket is interesting. I wanna hear the next record.','producer'],
+['Nia','NEW MUSIC ALERT 🚨 '+song+' just dropped. What y’all saying?','blogger'],
+['Dre','Added it to my rotation.','listener'],
+['Avery','Interesting release. Keeping an eye on this artist.','A&R']
+],week:[
+['Maya','I keep coming back to '+song+'.','fan'],
+['Jaylen','The song is starting to move. Timing matters now.','producer'],
+['Nia','People are talking about '+song+' more this week.','blogger'],
+['Dre','Okayyy this is growing on me.','listener'],
+['Avery','The numbers are beginning to tell a story.','A&R']
+]};
+let arr=templates[reason==='release'?'release':'week'];S.social=arr.map((x,i)=>({name:x[0],text:x[1],type:x[2],likes:Math.floor(3+Math.random()*240),week:S.week})).concat(S.social).slice(0,30)}
+function social(){
+if(S.released&&S.social.length===0)generateFeed('release');
+let cards=S.social.map(p=>`<div class="card feed"><div class="row"><div class="row" style="justify-content:flex-start"><div class="avatar">${p.name[0]}</div><div><div class="name">${p.name} <span class="pill">${p.type}</span></div><div class="tiny">@${p.name.toLowerCase()}music • Week ${p.week}</div></div></div><span class="tiny">♡ ${p.likes}</span></div><p>${p.text}</p><div class="meta">AI-generated fictional account • simulated reaction</div></div>`).join('');
+document.getElementById('screen').innerHTML=`<div class="page"><div class="hero"><div class="gold">THE INTERNET</div><h1>Social</h1><div class="sub">A living feed of fans, creators, bloggers and industry accounts reacting to your career.</div></div><div class="section">${S.released?cards:`<div class="card">Release a song to start generating reactions.</div>`}</div></div>`}
+function career(){
+document.getElementById('screen').innerHTML=`<div class="page"><div class="hero"><div class="gold">THE INDUSTRY</div><h1>Career</h1><div class="sub">Every week creates consequences. Grow your audience, reputation and opportunities.</div></div>
+<div class="section"><h2>Global chart</h2><div class="card"><table><tr><td>1. Fictional superstar</td><td>#1</td></tr><tr><td>2. Fictional superstar</td><td>#2</td></tr><tr><td>3. Fictional superstar</td><td>#3</td></tr><tr><td><b>${S.artist} — ${S.song?.name||'No release'}</b></td><td>${S.released?'#'+(Math.max(4,80-S.rep*2+Math.floor(Math.random()*20))):'—'}</td></tr></table></div></div>
+<div class="section"><h2>Opportunities</h2><div class="card"><div class="row"><div><b>Club show</b><div class="tiny">Earn cash + local fans</div></div><button class="secondary" onclick="show('club')">$250</button></div></div>
+<div class="card"><div class="row"><div><b>Opening slot</b><div class="tiny">Industry exposure + reputation</div></div><button class="secondary" onclick="show('open')">$150</button></div></div>
+<div class="card"><div class="row"><div><b>Feature offer</b><div class="tiny">Pay another artist to appear on your song</div></div><button class="secondary" onclick="feature()">$400</button></div></div></div>
+<div class="section"><h2>Achievements</h2><div class="card">${S.streams>=1000?'🏆 1,000 streams reached':'🔒 1,000 streams — keep growing'}<br>${S.fans>=1000?'🏆 1,000 fans':'🔒 1,000 fans'}<br>${S.rep>=50?'🏆 Industry reputation':'🔒 Build industry reputation'}</div></div></div>`}
+function show(type){if(S.money<150)return toast('Not enough cash');S.money-=150;S.fans+=80;S.rep+=2;S.streams+=220;S.shows.push(S.week);save();toast('Show booked — crowd loved it!');go('career')}
+function feature(){if(S.money<400)return toast('Not enough cash');S.money-=400;S.rep+=4;S.streams+=600;save();toast('Feature released!');go('home')}
+function musicVideo(){if(S.money<750)return toast('You need $750');S.money-=750;S.fans+=180;S.monthly+=250;S.rep+=4;save();toast('Music video premiered 🎬');go('home')}
+function advance(){
+if(!S.released){toast('Release music before advancing');return}
+S.week++;if(S.week>52){S.week=1;S.year++;S.level++}
+let base=220+S.rep*35+Math.floor(Math.random()*400), mult=S.song?.energy==='High'?1.25:S.song?.energy==='Low'?.82:1;
+let gained=Math.floor(base*mult);S.streams+=gained;S.monthly=Math.max(0,Math.floor(S.monthly*.88+gained*.42));S.fans+=Math.floor(gained/18)+Math.floor(Math.random()*30);S.money+=Math.floor(gained*.0035);S.rep=Math.min(100,S.rep+(Math.random()<.35?1:0));generateFeed('week');save();toast(`Week ${S.week}: ${fmt(gained)} new streams`);go('home')}
+function me(){
+document.getElementById('screen').innerHTML=`<div class="page"><div class="hero"><div class="gold">ARTIST PROFILE</div><h1>${S.artist}</h1><div class="sub">${S.genre} • Level ${S.level} • Year ${S.year}</div></div>
+<div class="section"><div class="card"><b>Edit artist</b><input class="input" value="${S.artist}" onchange="S.artist=this.value||'Artist';save();go('me')"><div style="height:8px"></div><select class="input" onchange="S.genre=this.value;save()"><option ${S.genre==='R&B'?'selected':''}>R&B</option><option ${S.genre==='Pop'?'selected':''}>Pop</option><option ${S.genre==='Rap'?'selected':''}>Rap</option><option ${S.genre==='Alternative'?'selected':''}>Alternative</option></select></div></div>
+<div class="section"><h2>Career stats</h2><div class="grid"><div class="stat"><b>${fmt(S.streams)}</b><small>Streams</small></div><div class="stat"><b>${fmt(S.fans)}</b><small>Fans</small></div><div class="stat"><b>$${fmt(S.money)}</b><small>Cash</small></div><div class="stat"><b>${S.rep}</b><small>Reputation</small></div></div></div>
+<div class="section"><button class="secondary" onclick="if(confirm('Reset your career?')){localStorage.removeItem('starmaker_v4');location.reload()}">Reset career</button></div></div>`}
+document.getElementById('weekLabel').textContent=`WEEK ${S.week} • YEAR ${S.year}`;
+setInterval(()=>document.getElementById('weekLabel').textContent=`WEEK ${S.week} • YEAR ${S.year}`,500);
+go('home');
+</script>
+</body>
+</html>
